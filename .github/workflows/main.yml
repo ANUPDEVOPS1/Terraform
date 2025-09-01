@@ -1,0 +1,17 @@
+name: Github CICP Pipeline Terraform
+
+On: workfloe_dispatch
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  terraform-job:
+    runs_on: self-hosted
+    steps:
+    -name: checkout
+    uses: actions/checkout@v5.0.0
+
+    -name
+    
+    
+   
