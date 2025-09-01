@@ -82,7 +82,7 @@ jobs:
      run: terraform plan-no-color-input=false
      continue-on-error: true
      working-directory: .github/workflows 
-
+jobs:
   manual_approval:
     name: Manual Validation
     runs-on: ubuntu-latest  #for github hosted runner
