@@ -37,24 +37,25 @@
 
  # pipeline with jobs & conditions for terraform
 
-     name: Terraform Pipeline
+name: Terraform Pipeline
+
 on:
+  workflow_dispatch:     # manual trigger ke liye
   push:
     branches:
       - main
   # pull_request:
   #   branches:
   #     - main
-  # workflow_dispatch:   # for manual trigger if needed
-runs_on: self-hosted
 jobs:
   terraform_plan:
-    name: Terraform Init, fmt, Validate & Plan
-    runs-on: self-hosted
+    name: Terraform Init, Fmt, Validate & Plan
+    runs-on: self-hosted   # ya 'ubuntu-latest' agar GitHub runner use karna ho
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      # Uncomment agar Azure login chahiye toh
       # - name: Azure Login
       #   uses: azure/login@v1
       #   with:
@@ -63,40 +64,36 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.5.7   # apne hisaab se version dal lo
+          terraform_version: 1.5.7
 
-     -name:terraform init
-     id: init
-     run: terraform init-input=false
-     working-directory: .github/workflows
-     
-    -name:terraform fmt
-     id: fmt
-     run: terraform fmt-input=false
-     continue-on-error: true
-     working-directory: .github/workflows
-     
-    -name:terraform validate
-     id: validate
-     run: terraform validate-no-color
-     continue-on-error: true
-     working-directory: .github/workflows 
-     
-    -name:terraform plan
-     id: plan
-     run: terraform plan-no-color-input=false
-     continue-on-error: true
-     working-directory: .github/workflows 
-jobs:
+      - name: Terraform Init
+        run: terraform init -input=false
+        working-directory: .github/workflows
+
+      - name: Terraform Fmt
+        run: terraform fmt -input=false
+        continue-on-error: true
+        working-directory: .github/workflows
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+        continue-on-error: true
+        working-directory: .github/workflows
+
+      - name: Terraform Plan
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
+        working-directory: .github/workflows
+
   manual_approval:
     name: Manual Validation
-    runs-on: ubuntu-latest  #for github hosted runner
+    runs-on: ubuntu-latest    # GitHub hosted runner
     needs: terraform_plan
     steps:
       - name: Wait for approval
         uses: trstringer/manual-approval@v1
         with:
-          approvers: your-github-username   # yahan apna ya team ka GitHub user
+          approvers: your-github-username   # Apna GitHub username yahan daal
           minimum-approvals: 1
           issue-title: "Approve Terraform Apply"
           issue-body: "Approve to continue to Terraform Apply step."
@@ -105,8 +102,8 @@ jobs:
     name: Terraform Apply
     runs-on: self-hosted
     needs: manual_approval
-    if: github.ref == 'refs/heads/main'   # 👈 condition: only run on main branch
-    enviroments: dev ya prod jo bhi branch use krna hoga
+    if: github.ref == 'refs/heads/main'    # Sirf main branch pe chalega
+    environment: dev   # ya prod, jo bhi environment chahiye
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -126,7 +123,6 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
-        
 
     
    
