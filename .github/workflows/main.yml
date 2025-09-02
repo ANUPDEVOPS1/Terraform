@@ -4,6 +4,7 @@ name: Terraform Pipeline
   push:
     branches:
       - main
+      
 jobs:
   terraform_plan:
     name: 'Terraform Init, Fmt, Validate & Plan'
