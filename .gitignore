@@ -1,37 +1,61 @@
-# Local .terraform directories
-.terraform/
-
-# .tfstate files
-*.tfstate
-*.tfstate.*
-
-# Crash log files
-crash.log
-crash.*.log
-
-# Exclude all .tfvars files, which are likely to contain sensitive data, such as
-# password, private keys, and other secrets. These should not be part of version 
-# control as they are data points which are potentially sensitive and subject 
-# to change depending on the environment.
-*.tfvars
-*.tfvars.json
-
-# Ignore override files as they are usually used to override resources locally and so
-# are not checked in
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-
-# Ignore transient lock info files created by terraform apply
-.terraform.tfstate.lock.info
-
-# Include override files you do wish to add to version control using negated pattern
-# !example_override.tf
-
-# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
-# example: *tfplan*
-
-# Ignore CLI configuration files
-.terraformrc
-terraform.rc
+name: Terraform Pipeline
+'on':
+  workflow_dispatch: null
+  push:
+    branches:
+      - main
+jobs:
+  terraform_plan:
+    name: 'Terraform Init, Fmt, Validate & Plan'
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+      - name: Terraform Init
+        run: terraform init -input=false
+        working-directory: https://github.com/ANUPDEVOPS1/Terraform
+      - name: Terraform Fmt
+        run: terraform fmt -input=false
+        continue-on-error: true
+        working-directory: https://github.com/ANUPDEVOPS1/Terraform
+      - name: Terraform Validate
+        run: terraform validate -no-color
+        continue-on-error: true
+        working-directory: https://github.com/ANUPDEVOPS1/Terraform
+      - name: Terraform Plan
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
+        working-directory: https://github.com/ANUPDEVOPS1/Terraform
+  manual_approval:
+    name: Manual Validation
+    runs-on: ubuntu-latest
+    needs: terraform_plan
+    steps:
+      - name: Wait for approval
+        uses: trstringer/manual-approval@v1
+        with:
+          approvers: your-github-username
+          minimum-approvals: 1
+          issue-title: Approve Terraform Apply
+          issue-body: Approve to continue to Terraform Apply step.
+  terraform_apply:
+    name: Terraform Apply
+    runs-on: self-hosted
+    needs: manual_approval
+    if: github.ref == 'refs/heads/main'
+    environment: dev
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+      - name: Terraform Init (again to sync state)
+        run: terraform init
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
