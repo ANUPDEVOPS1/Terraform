@@ -42,23 +42,23 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:   # for manual trigger if needed
-
+  # pull_request:
+  #   branches:
+  #     - main
+  # workflow_dispatch:   # for manual trigger if needed
+runs_on: self-hosted
 jobs:
   terraform_plan:
     name: Terraform Init, fmt, Validate & Plan
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - name: Azure Login
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -103,7 +103,7 @@ jobs:
 
   terraform_apply:
     name: Terraform Apply
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: manual_approval
     if: github.ref == 'refs/heads/main'   # 👈 condition: only run on main branch
     enviroments: dev ya prod jo bhi branch use krna hoga
@@ -111,10 +111,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - name: Azure Login
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
