@@ -2,14 +2,38 @@ name: CICD PIPELINE
 
 on:
   workflow_dispatch
-
 jobs:
-  terraform-tfsec:
+  terraform:
+    name: Terraform Init, Validate, and Apply
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Greet Anup
-        run: echo "hello Anup"
-      - name: Greet Rajnish
-        run: echo "hello Rajnish"
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6   # apne hisab se version change karo
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Apply (auto-approve)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve  
+  
+
+# jobs:
+#   terraform-tfsec:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Greet Anup
+#         run: echo "hello Anup"
+#       - name: Greet Rajnish
+#         run: echo "hello Rajnish"
 
   
