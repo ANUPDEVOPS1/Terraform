@@ -1,0 +1,9 @@
+name: CICD PIPELINE
+on: workflow_dispatch
+jobs:
+  terraform tfsec
+runs-on: ubuntu-latest
+  steps:
+    run: Anup Tiwari
+    run: echo "hello Anup"
+  
